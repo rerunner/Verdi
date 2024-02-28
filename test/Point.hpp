@@ -36,7 +36,7 @@ public:
 
   double GetX() const {return x_;}
   double GetY() const {return y_;}
-  double GetZ() const {return x_;}
+  double GetZ() const {return z_;}
 };
 
 // Boilerplate

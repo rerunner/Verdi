@@ -7,9 +7,58 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include <raft>
+#include <raftio>
+
 #include "IMyAggregateRootRepository.h"
 #include "RepositoryFactory.h"
 #include "Point.hpp"
+
+// Kernel definitions
+template < class T > class SourceUnit : public raft::kernel
+{
+public:
+   SourceUnit() : kernel()
+    {
+       output.addPort< T >( "outputPoint" );
+    }
+
+
+  virtual ~SourceUnit() = default;
+
+  virtual raft::kstatus run()
+  {
+    const T out{20.0, 30.0, 40.0};
+    output[ "outputPoint" ].push( out );
+    return( raft::stop );
+   }
+
+private:
+};
+
+template < typename  T > class AdderUnit : public raft::kernel
+{
+public:
+    AdderUnit() : kernel()
+    {
+      input.addPort< T >("inputPoint");
+      output.addPort< T >( "outputPoint" );
+    }
+
+    virtual ~AdderUnit() = default;
+
+    virtual raft::kstatus run()
+    {
+      T pointContainer;
+      input[ "inputPoint" ].pop( pointContainer ); 
+      const T out{pointContainer.GetX()+1, pointContainer.GetY()+1, pointContainer.GetZ()+1};
+      output[ "outputPoint" ].push( out );
+      return( raft::proceed );
+    }
+
+private:
+};
+
 
 int main()
 {
@@ -19,11 +68,37 @@ int main()
     IRepositoryFactory<MyAggregateRoot> *repositoryFactory = new RepositoryFactory<MyAggregateRoot>;
     
     //Use factory to create specialized repository to store on Heap Memory or ORM
-    //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
-    auto *myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
+    auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
+    //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
 
-    const Point myPoint{22.0,33.0,44.0};
-    MyAggregateRoot entity1{ 1.0,100.0,200.0, myPoint };
+    Point myEndPoint;
+    Point myPoint{20.0,30.0,40.0};
+    
+    // Raft start
+    SourceUnit<Point> sourceUnit;
+    AdderUnit<Point> adderUnit;
+
+    using SinkLambda = raft::lambdak<Point>;
+    SinkLambda sinkLambda(1,/* input port */
+		          0, /* output port */
+			  [&](Port &input,
+			      Port &output)
+			  {
+			    UNUSED( output );
+			    input[ "0" ].pop( myEndPoint );
+			    return( raft::stop );
+			  });
+
+    raft::map m;
+    m += sourceUnit >> adderUnit >> sinkLambda;
+    m.exe();
+    //Raft End
+
+    std::cout << "X = " << myEndPoint.GetX();
+    std::cout << ", Y = " << myEndPoint.GetY();
+    std::cout << ", Z = " << myEndPoint.GetZ() << std::endl;
+
+    MyAggregateRoot entity1{ 1.0,100.0,200.0, myEndPoint };
     std::cout << "AggregateRoot " << entity1.GetId() << " created.\n";
     
     myRepo->Store(entity1);
