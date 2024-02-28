@@ -1,15 +1,13 @@
-#ifndef POINT_H
-#define POINT_H
+#pragma once
 
 #include "ValueObjectBase.hpp"
 
 
-class Point : public ValueObjectBase
+class Position : public ValueObjectBase
 {
 private:
   double x_;
   double y_;
-  double z_;
 
   //Boilerplate start
   friend class hiberlite::access;
@@ -18,28 +16,25 @@ private:
   {
     ar & HIBERLITE_NVP(x_);
     ar & HIBERLITE_NVP(y_);
-    ar & HIBERLITE_NVP(z_);
   }
   //Boilerplate end
   
 public:
-  Point(double x = 0.0, double y = 0.0, double z = 0.0) : x_(x), y_(y), z_(z) {}
+  Position(double x = 0.0, double y = 0.0) : x_(x), y_(y) {}
 
   bool operator==(const ValueObjectBase& other) const override
   {
-    if (const Point* otherPoint = dynamic_cast<const Point*>(&other))
+    if (const Position* otherPosition = dynamic_cast<const Position*>(&other))
       {
-	return (x_ == otherPoint->x_) && (y_ == otherPoint->y_);
+	return (x_ == otherPosition->x_) && (y_ == otherPosition->y_);
       }
     return false;
   }
 
   double GetX() const {return x_;}
   double GetY() const {return y_;}
-  double GetZ() const {return z_;}
 };
 
 // Boilerplate
-HIBERLITE_EXPORT_CLASS(Point)
+HIBERLITE_EXPORT_CLASS(Position)
 
-#endif // POINT_H

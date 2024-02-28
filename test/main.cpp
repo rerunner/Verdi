@@ -10,49 +10,58 @@
 #include <raft>
 #include <raftio>
 
-#include "IMyAggregateRootRepository.h"
 #include "RepositoryFactory.h"
-#include "Point.hpp"
 
-// Kernel definitions
-template < class T > class SourceUnit : public raft::kernel
+#include "Position.hpp"
+#include "Measurement.hpp"
+#include "WaferHeightMap.hpp"
+#include "IWaferHeightMapRepository.hpp"
+
+// Streaming Kernel definitions
+
+//Source unit generates positions to measure on the wafer.
+class PositionSetUnit : public raft::kernel
 {
 public:
-   SourceUnit() : kernel()
-    {
-       output.addPort< T >( "outputPoint" );
-    }
+  PositionSetUnit() : kernel()
+  {
+    output.addPort< Position >( "outputPosition" );
+  }
 
-
-  virtual ~SourceUnit() = default;
+  virtual ~PositionSetUnit() = default;
 
   virtual raft::kstatus run()
   {
-    const T out{20.0, 30.0, 40.0};
-    output[ "outputPoint" ].push( out );
+    double xpos = 0.0, ypos = 0.0;
+    for (int i = 0; i < 10; i++)
+    {
+      const Position out{xpos++, ypos++};
+      output[ "outputPosition" ].push( out );
+    }
     return( raft::stop );
-   }
+  }
 
 private:
 };
 
-template < typename  T > class AdderUnit : public raft::kernel
+//Measure unit measures the height for every input position
+class MeasureUnit : public raft::kernel
 {
 public:
-    AdderUnit() : kernel()
+    MeasureUnit() : kernel()
     {
-      input.addPort< T >("inputPoint");
-      output.addPort< T >( "outputPoint" );
+      input.addPort< Position >("inputPosition");
+      output.addPort< Measurement >( "outputMeasurement" );
     }
 
-    virtual ~AdderUnit() = default;
+    virtual ~MeasureUnit() = default;
 
     virtual raft::kstatus run()
     {
-      T pointContainer;
-      input[ "inputPoint" ].pop( pointContainer ); 
-      const T out{pointContainer.GetX()+1, pointContainer.GetY()+1, pointContainer.GetZ()+1};
-      output[ "outputPoint" ].push( out );
+      Position positionContainer;
+      input[ "inputPosition" ].pop( positionContainer ); // Receive position from input port
+      const Measurement measurementContainer{positionContainer, 1.0}; // Do Measurement
+      output[ "outputMeasurement" ].push( measurementContainer ); // Push measurement to output port
       return( raft::proceed );
     }
 
@@ -64,62 +73,61 @@ int main()
 {
     std::cout << "Data Infrastructure framework for C++\n\n";
 
-    //Create Factory for MyAggregateRoot
-    IRepositoryFactory<MyAggregateRoot> *repositoryFactory = new RepositoryFactory<MyAggregateRoot>;
+    //Create Factory for the WaferHeightMap repository
+    IRepositoryFactory<WaferHeightMap> *repositoryFactory = new RepositoryFactory<WaferHeightMap>;
     
     //Use factory to create specialized repository to store on Heap Memory or ORM
-    auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
-    //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
+    //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
+    auto *myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
 
-    Point myEndPoint;
-    Point myPoint{20.0,30.0,40.0};
+    // Create empty wafer heightmap
+    WaferHeightMap waferHeightMap;
+    std::cout << "WaferHeightMap created with ID = " << waferHeightMap.GetId() << "\n";
     
-    // Raft start
-    SourceUnit<Point> sourceUnit;
-    AdderUnit<Point> adderUnit;
+    // Raft streaming start
+    Measurement generatedMeasurement;
+    PositionSetUnit positionSetUnit;
+    MeasureUnit measureUnit;
 
-    using SinkLambda = raft::lambdak<Point>;
+    using SinkLambda = raft::lambdak<Measurement>;
     SinkLambda sinkLambda(1,/* input port */
 		          0, /* output port */
 			  [&](Port &input,
 			      Port &output)
 			  {
 			    UNUSED( output );
-			    input[ "0" ].pop( myEndPoint );
-			    return( raft::stop );
+			    input[ "0" ].pop( generatedMeasurement ); // Take the measurement from the input
+			    waferHeightMap.AddMeasurement(generatedMeasurement); // And add it to the heightmap
+			    return( raft::proceed ); // Wait for the next measurement or stream end tag.
 			  });
 
     raft::map m;
-    m += sourceUnit >> adderUnit >> sinkLambda;
+    m += positionSetUnit >> measureUnit >> sinkLambda;
     m.exe();
-    //Raft End
-
-    std::cout << "X = " << myEndPoint.GetX();
-    std::cout << ", Y = " << myEndPoint.GetY();
-    std::cout << ", Z = " << myEndPoint.GetZ() << std::endl;
-
-    MyAggregateRoot entity1{ 1.0,100.0,200.0, myEndPoint };
-    std::cout << "AggregateRoot " << entity1.GetId() << " created.\n";
+    //Raft streaming End
     
-    myRepo->Store(entity1);
-    std::cout << "AggregateRoot " << entity1.GetId() << " persisted.\n";
+    myRepo->Store(waferHeightMap); //Use case "measure height map" ended
+    
+    std::cout << "WaferHeightMap with ID = " << waferHeightMap.GetId() << " persisted.\n";
 
-    MyAggregateRoot entity2 = myRepo->Get(entity1.GetId());
-    std::cout << "Copy of AggregateRoot " << entity1.GetId() << " retrieved.\n";
-
-    std::cout << "Copy of AggregateRoot, X = " << entity2.GetX() << std::endl;
-    std::cout << "Copy of AggregateRoot, ID = " << entity2.GetId() << std::endl;
-    const Point myRetrievedPoint = entity2.GetPoint();
-    std::cout << "Copy of AggregateRoot myPoint.x = " << myRetrievedPoint.GetX() << std::endl;
+    WaferHeightMap whm_clone = myRepo->Get(waferHeightMap.GetId());
+    std::cout << "WaferHeightMap clone created with ID = " << whm_clone.GetId() << "\n";
+    
+    std::list<Measurement> myHeightMap = whm_clone.GetHeightMap();
+    // Looping through all of the elements:
+    for (Measurement myMeas : myHeightMap)
+    {
+      Position myPosition = myMeas.GetPosition();
+      std::cout << " Measurement X = " << myPosition.GetX() << std::endl;
+      std::cout << " Measurement Y = " << myPosition.GetY() << std::endl;
+      std::cout << " Measurement Z = " << myMeas.GetZ() << std::endl;
+    }
 	
-    myRepo->Delete(entity1);
+    myRepo->Delete(waferHeightMap);
 
     std::cout << "trying again";
-    myRepo->Delete(entity1);
+    myRepo->Delete(waferHeightMap);
     std::cout << " should do nothing" << std::endl;
-
-    myRepo->Store(entity1);
-    myRepo->Delete(entity1);
 
     return 0;
 }
