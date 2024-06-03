@@ -18,7 +18,7 @@
 #include "RepositoryFactory.h" // ?
 #include "RepositoryORMBase.h"
 #include "GenLogger.hpp"
-#include "domain/WaferHeightMap.hpp"
+//#include "domain/WaferHeightMap.hpp"
 
 //#define REPOSITORY_TYPE RepositoryType::HeapRepository
 #define REPOSITORY_TYPE RepositoryType::ORM

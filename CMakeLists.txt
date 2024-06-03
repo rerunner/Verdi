@@ -34,9 +34,9 @@ set(dst "${CMAKE_CURRENT_BINARY_DIR}")
 set(all_targets VerdiTest)
 
 #Some files need to be moved into the temporary destination folder
-foreach(file Scanner.idl rtps.ini run_all.sh)
-	configure_file(${src}/${file} ${dst}/${file} COPYONLY)
-endforeach()
+#foreach(file Scanner.idl rtps.ini run_all.sh)
+#	configure_file(${src}/${file} ${dst}/${file} COPYONLY)
+#endforeach()
 
 if (DOXYGEN_FOUND)
     # set input and output files
@@ -60,9 +60,10 @@ endif (DOXYGEN_FOUND)
 
 # Scanner target
 add_executable(VerdiTest
+	${src}/include/Uuid.cpp
 	${src}/src/main.cpp
 )
 
-target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" )
-target_link_libraries(Scanner nlohmann_json::nlohmann_json ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} )
+target_include_directories(VerdiTest PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/include")
+target_link_libraries(VerdiTest nlohmann_json::nlohmann_json ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} )
 

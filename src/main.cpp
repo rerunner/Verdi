@@ -10,7 +10,7 @@
 #include <raft>
 #include <raftio>
 
-#include "RepositoryFactory.h"
+#include "infrastructure/base/UnitOfWork.hpp"
 
 #include "Position.hpp"
 #include "Measurement.hpp"
@@ -68,21 +68,19 @@ public:
 private:
 };
 
+unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::WARNING | GSL::INFO;
 
 int main()
 {
-    std::cout << "Data Infrastructure framework for C++\n\n";
+    unitofwork::UnitOfWorkFactory UoWFactory;
 
-    //Create Factory for the WaferHeightMap repository
-    IRepositoryFactory<WaferHeightMap> *repositoryFactory = new RepositoryFactory<WaferHeightMap>;
-    
-    //Use factory to create specialized repository to store on Heap Memory or ORM
-    //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
-    auto *myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
+    std::cout << "Versatile Data Infrastructure test \n\n";
+
+    std::unique_ptr<unitofwork::UnitOfWork> context_ = UoWFactory.GetNewUnitOfWork();
 
     // Create empty wafer heightmap
-    WaferHeightMap waferHeightMap;
-    std::cout << "WaferHeightMap created with ID = " << waferHeightMap.GetId() << "\n";
+    std::shared_ptr<WaferHeightMap> waferHeightMap = std::make_shared<WaferHeightMap>();
+    std::cout << "WaferHeightMap created with ID = " << waferHeightMap->GetId().Get() << "\n";
     
     // Raft streaming start
     Measurement generatedMeasurement;
@@ -97,7 +95,7 @@ int main()
 			  {
 			    UNUSED( output );
 			    input[ "0" ].pop( generatedMeasurement ); // Take the measurement from the input
-			    waferHeightMap.AddMeasurement(generatedMeasurement); // And add it to the heightmap
+			    waferHeightMap->AddMeasurement(generatedMeasurement); // And add it to the heightmap
 			    return( raft::proceed ); // Wait for the next measurement or stream end tag.
 			  });
 
@@ -106,28 +104,10 @@ int main()
     m.exe();
     //Raft streaming End
     
-    myRepo->Store(waferHeightMap); //Use case "measure height map" ended
+    context_->RegisterNew<WaferHeightMap>(waferHeightMap);
+    context_->Commit();
     
-    std::cout << "WaferHeightMap with ID = " << waferHeightMap.GetId() << " persisted.\n";
-
-    WaferHeightMap whm_clone = myRepo->Get(waferHeightMap.GetId());
-    std::cout << "WaferHeightMap clone created with ID = " << whm_clone.GetId() << "\n";
-    
-    std::list<Measurement> myHeightMap = whm_clone.GetHeightMap();
-    // Looping through all of the elements:
-    for (Measurement myMeas : myHeightMap)
-    {
-      Position myPosition = myMeas.GetPosition();
-      std::cout << " Measurement X = " << myPosition.GetX() << std::endl;
-      std::cout << " Measurement Y = " << myPosition.GetY() << std::endl;
-      std::cout << " Measurement Z = " << myMeas.GetZ() << std::endl;
-    }
-	
-    myRepo->Delete(waferHeightMap);
-
-    std::cout << "trying again";
-    myRepo->Delete(waferHeightMap);
-    std::cout << " should do nothing" << std::endl;
+    std::cout << "WaferHeightMap with ID = " << waferHeightMap->GetId().Get() << " persisted.\n";
 
     return 0;
 }

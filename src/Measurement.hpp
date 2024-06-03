@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ValueObjectBase.hpp"
+#include "domain/base/ValueObjectBase.hpp"
 #include "Position.hpp"
 
 
