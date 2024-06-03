@@ -4,46 +4,71 @@
 #include <vector>
 #include <iterator>
 #include "IRepositoryBase.h"
+#include "GenLogger.hpp"
 
 template <typename RepositoryBaseType>
 class RepositoryHeapMemoryBase : public IRepositoryBase<RepositoryBaseType>
 {
 private:
-	std::vector<RepositoryBaseType> entityVector;
+	inline static std::vector<RepositoryBaseType> entityVector;
+  inline static std::mutex repMtx;
 public:
+  virtual ~RepositoryHeapMemoryBase(){}
+
   void Store(RepositoryBaseType entity)
   {
-    entityVector.push_back(entity); std::cout << "Entity " << entity.GetId() << " stored in repository!\n";
+    std::scoped_lock lock{repMtx};
+    entityVector.push_back(entity); 
   };
 	
   void Delete(RepositoryBaseType entity)
   {
+    std::scoped_lock lock{repMtx};
     for (auto i = entityVector.begin(); i != entityVector.end(); ++i)
     {
       RepositoryBaseType dummy = *i;
-      if (dummy.GetId() == entity.GetId())
+      if (dummy.GetId().Get() == entity.GetId().Get())
       {
-        std::cout << "Entity Id " << entity.GetId() << " erased from repository!\n";
         entityVector.erase(i);
         return;
       }
     }
-    std::cout << "Entity Id " << entity.GetId() << " not found in repository!\n";
     return;
   };
 	
-  RepositoryBaseType Get(std::string id)
+  RepositoryBaseType Get(Uuid id)
   {
-    //for (const auto &iter:entityVector)
+    std::scoped_lock lock{repMtx};
     for (auto &iter:entityVector)
     {
-      if (iter.GetId() == id)
+      GSL::Dprintf(GSL::INFO, "Get -----> searching, found id = ", iter.GetId().Get());
+      if (iter.GetId().Get() == id.Get())
       {
-        std::cout << "Entity " << iter.GetId() << " retrieved from repository!\n";
+        GSL::Dprintf(GSL::INFO, "Get -----> Id match");
         return iter;
       }
     }
-    std::cout << "Entity Id " << id << " not found in repository!\n";
     throw std::runtime_error(std::string("Entity not found in repository\n"));
+  };
+
+  std::vector<RepositoryBaseType> GetAll()
+  {
+    std::scoped_lock lock{repMtx};
+    return entityVector;
+  };
+
+  std::vector<RepositoryBaseType> GetAllChildren(Uuid parentId)
+  {
+    std::scoped_lock lock{repMtx};
+    std::vector<RepositoryBaseType> vList;
+
+    for (auto &iter:entityVector)
+    {
+      if (parentId.Get().compare(iter.GetParentId().Get()) == 0)
+      {
+        vList.push_back(iter);
+      }
+    }
+    return vList;
   };
 };
