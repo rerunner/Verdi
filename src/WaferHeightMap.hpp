@@ -1,15 +1,17 @@
 #pragma once
 #include <list>
 #include "hiberlite.h"
+#include <nlohmann/json.hpp>
 #include "domain/base/AggregateRootBase.hpp"
 #include "Measurement.hpp" //Value Object
 
+using json = nlohmann::json;
 
 class WaferHeightMap : public AggregateRootBase
 {
 private:
   std::list<Measurement> measurements_;
-  
+
   //Boilerplate start
   friend class hiberlite::access;
   template<class Archive>
@@ -30,8 +32,23 @@ public:
 
   void AddMeasurement(Measurement m) { measurements_.push_back(m); }
 
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(WaferHeightMap, id_, measurements_)
+
 };
 
 // Boilerplate
 HIBERLITE_EXPORT_CLASS(WaferHeightMap)
 
+#if 0
+//json boiler
+void to_json(json& j, const WaferHeightMap& p) 
+{
+  j = json{{"measurements_", p.measurements_}};
+}
+
+void from_json(const json& j, WaferHeightMap& p) 
+{
+  j.at("measurements_").get_to(p.measurements_);
+}
+#endif

@@ -2,6 +2,9 @@
 
 #include "domain/base/ValueObjectBase.hpp"
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 class Position : public ValueObjectBase
 {
@@ -9,7 +12,7 @@ private:
   double x_;
   double y_;
 
-  //Boilerplate start
+  //Hiberlite oilerplate start
   friend class hiberlite::access;
   template<class Archive>
   void hibernate(Archive & ar)
@@ -33,8 +36,10 @@ public:
 
   double GetX() const {return x_;}
   double GetY() const {return y_;}
+
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(Position, x_, y_)
 };
 
-// Boilerplate
+// Hiberlite Boilerplate
 HIBERLITE_EXPORT_CLASS(Position)
-

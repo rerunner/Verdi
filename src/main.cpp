@@ -79,7 +79,8 @@ int main()
     std::unique_ptr<unitofwork::UnitOfWork> context_ = UoWFactory.GetNewUnitOfWork();
 
     // Create empty wafer heightmap
-    std::shared_ptr<WaferHeightMap> waferHeightMap = std::make_shared<WaferHeightMap>();
+    Uuid waferId;
+    std::shared_ptr<WaferHeightMap> waferHeightMap = std::make_shared<WaferHeightMap>(waferId);
     std::cout << "WaferHeightMap created with ID = " << waferHeightMap->GetId().Get() << "\n";
     
     // Raft streaming start
@@ -106,8 +107,31 @@ int main()
     
     context_->RegisterNew<WaferHeightMap>(waferHeightMap);
     context_->Commit();
-    
     std::cout << "WaferHeightMap with ID = " << waferHeightMap->GetId().Get() << " persisted.\n";
+
+    // Get test
+    std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
+    auto repository = repositoryFactory->GetRepository(REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
+    auto whmClone = repository->Get(waferHeightMap->GetId()); //Fetch all heightmaps in the database
+    std::cout << "Get WaferHeightMap with ID = " << waferHeightMap->GetId().Get() << " returned ";
+    std::cout << whmClone.GetId().Get() << std::endl;
+    //
+
+    // GetAll test
+    //std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
+    //auto repository = repositoryFactory->GetRepository(REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
+    auto whmList = repository->GetAll(); //Fetch all heightmaps in the database
+    std::cout << "Searched for all waferheightmaps. found number = " << whmList.size() << std::endl;
+    //
+
+    // GetAllChildren test
+    auto whmList2 = repository->GetAllChildren(whmClone.GetParentId()); //Fetch all heightmaps in the database
+    std::cout << "Searched for specific waferheightmaps. found number = " << whmList2.size() << std::endl;
+    //
+
+    context_->RegisterDeleted<WaferHeightMap>(waferHeightMap);
+    context_->Commit();
+    std::cout << "WaferHeightMap with ID = " << waferHeightMap->GetId().Get() << " deleted.\n";
 
     return 0;
 }

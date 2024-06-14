@@ -3,6 +3,9 @@
 #include "domain/base/ValueObjectBase.hpp"
 #include "Position.hpp"
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 class Measurement : public ValueObjectBase
 {
@@ -36,8 +39,10 @@ public:
 
   Position GetPosition() const {return position_;}
   double GetZ() const {return z_;}
+
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(Measurement, z_, position_)
 };
 
-// Boilerplate
+// Hiberlite Boilerplate
 HIBERLITE_EXPORT_CLASS(Measurement)
-
