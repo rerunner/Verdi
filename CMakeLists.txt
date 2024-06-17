@@ -56,6 +56,8 @@ find_library(BOOST_SYSTEM boost_system)
 
 find_library(HIBERLITE hiberlite)
 
+find_library(CURL_LIBRARIES curl)
+
 set(CXXFLAGS  "-fdiagnostics-color=always -g -std=c++20 -DSTRING_NAMES=1 -DL1D_CACHE_LINE_SIZE=64")
 set(CMAKE_CXX_FLAGS "${CXXFLAGS}")
 
@@ -95,5 +97,5 @@ add_executable(VerdiTest
 )
 
 target_include_directories(VerdiTest PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src" "${src}/include")
-target_link_libraries(VerdiTest Raven_CppClient_static nlohmann_json::nlohmann_json xxhash ${BOOST_SYSTEM} ${HIBERLITE} )
+target_link_libraries(VerdiTest Raven_CppClient_static nlohmann_json::nlohmann_json xxhash ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
 

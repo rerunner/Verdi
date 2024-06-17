@@ -39,16 +39,3 @@ public:
 
 // Boilerplate
 HIBERLITE_EXPORT_CLASS(WaferHeightMap)
-
-#if 0
-//json boiler
-void to_json(json& j, const WaferHeightMap& p) 
-{
-  j = json{{"measurements_", p.measurements_}};
-}
-
-void from_json(const json& j, WaferHeightMap& p) 
-{
-  j.at("measurements_").get_to(p.measurements_);
-}
-#endif
