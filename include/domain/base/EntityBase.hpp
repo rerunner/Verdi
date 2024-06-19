@@ -1,5 +1,4 @@
-#ifndef ENTITY_BASE_H
-#define ENTITY_BASE_H
+#pragma once
 
 #include <iostream>
 #include "boost/lexical_cast.hpp"
@@ -28,6 +27,3 @@ public:
     return !(*this == other);
   }
 };
-
-#endif /* ENTITY_BASE_H */
-  
