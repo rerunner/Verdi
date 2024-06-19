@@ -20,11 +20,6 @@
 #include "RepositoryFFSBase.h"
 #include "GenLogger.hpp"
 
-#define REPOSITORY_TYPE RepositoryType::HMM
-//#define REPOSITORY_TYPE RepositoryType::ORM
-//#define REPOSITORY_TYPE RepositoryType::FFS
-//#define REPOSITORY_TYPE RepositoryType::ODM
-
 namespace unitofwork {
 
 typedef std::map<std::string, void*> Dict; // Dictionary for repositories
@@ -73,7 +68,7 @@ public:
         entityInstance = newEnt;
         registryType = newRegistryType;
         db = passedDb;
-        repositoryType_ = REPOSITORY_TYPE;
+        repositoryType_ = RepositoryTypeBase::REPOSITORY_TYPE;
     }
     
     virtual ~EntityRegister()
@@ -101,7 +96,7 @@ public:
     UnitOfWork(std::any passedDb)
     {
         db = passedDb;
-        repositoryType_ = REPOSITORY_TYPE;
+        repositoryType_ = RepositoryTypeBase::REPOSITORY_TYPE;
     }
     virtual ~UnitOfWork()
     {
@@ -238,7 +233,7 @@ private:
 public:
     UnitOfWorkFactory()
     {
-        repositoryType_ = REPOSITORY_TYPE;
+        repositoryType_ = RepositoryTypeBase::REPOSITORY_TYPE;
         if (repositoryType_ == RepositoryType::ORM)
         {
             OpenHiberlite();

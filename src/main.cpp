@@ -12,6 +12,13 @@
 
 unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::WARNING | GSL::INFO;
 
+RepositoryType RepositoryTypeBase::REPOSITORY_TYPE = RepositoryType::ORM;
+// RepositoryType::HMM
+// RepositoryType::ORM
+// RepositoryType::FFS
+// RepositoryType::ODM
+
+
 int main()
 {
     unitofwork::UnitOfWorkFactory UoWFactory;
@@ -32,7 +39,7 @@ int main()
 
     // Get test
     std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
-    auto repository = repositoryFactory->GetRepository(REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
+    auto repository = repositoryFactory->GetRepository(RepositoryTypeBase::REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
     auto whmClone = repository->Get(waferHeightMap->GetId()); //Fetch all heightmaps in the database
     GSL::Dprintf(GSL::INFO, "Get WaferHeightMap with ID = ", waferHeightMap->GetId().Get()," returned ", whmClone.GetId().Get());
     //

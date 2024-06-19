@@ -12,8 +12,14 @@ enum RepositoryType
   FFS
 };
 
+class RepositoryTypeBase
+{
+  public:
+  static RepositoryType REPOSITORY_TYPE;//=RepositoryType::HMM;
+};
+
 template <typename T>
-class IRepositoryFactory
+class IRepositoryFactory : public RepositoryTypeBase
 {
 public:
   virtual ~IRepositoryFactory(){}
