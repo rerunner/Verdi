@@ -37,7 +37,6 @@ class EntityRegister
 {
     std::shared_ptr<EntityType> entityInstance;
     RegistryTypeEnum registryType;
-    //hiberlite::Database *db;
     std::any db;
     inline static std::mutex mtx;
     RepositoryType repositoryType_;
@@ -223,7 +222,8 @@ private:
 		std::string justProcessName = totalProcessName.substr(processNamePos+1);
 		std::ostringstream databaseName;
 		databaseName << justProcessName << "Database.db";
-        hiberDb2->open(":memory:"); // open(databaseName.str());
+        hiberDb2->open(":memory:"); 
+        //hiberDb2->open(databaseName.str());
 	}
     void CloseHiberlite()
 	{

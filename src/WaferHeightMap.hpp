@@ -17,7 +17,8 @@ private:
   template<class Archive>
   void hibernate(Archive & ar)
   {
-    ar & HIBERLITE_NVP(id_); // From Base class
+    ar & HIBERLITE_NVP(id_); // From Entity Base class
+    ar & HIBERLITE_NVP(parentId_); // From Entity Base class
     ar & HIBERLITE_NVP(measurements_);
   }
   //Boilerplate end
@@ -29,12 +30,10 @@ public:
   }
 
   std::list<Measurement> GetHeightMap(void){return measurements_;}
-
   void AddMeasurement(Measurement m) { measurements_.push_back(m); }
 
   //JSON boilerplate
-  NLOHMANN_DEFINE_TYPE_INTRUSIVE(WaferHeightMap, id_, measurements_)
-
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(WaferHeightMap, id_, parentId_, measurements_)
 };
 
 // Boilerplate

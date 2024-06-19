@@ -1,10 +1,5 @@
-// entitypp.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
-
 #include "infrastructure/base/UnitOfWork.hpp"
-
 #include "Position.hpp"
 #include "Measurement.hpp"
 #include "WaferHeightMap.hpp"
@@ -54,6 +49,7 @@ int main()
     GSL::Dprintf(GSL::INFO, "Searched for specific waferheightmaps. found number = ", whmList2.size());
     //
 
+    // Delete test
     context_->RegisterDeleted<WaferHeightMap>(waferHeightMap);
     context_->Commit();
     GSL::Dprintf(GSL::INFO, "WaferHeightMap with ID = ", waferHeightMap->GetId().Get(), " deleted.");

@@ -15,7 +15,6 @@ template <typename RepositoryBaseType>
 class RepositoryORMBase : public IRepositoryBase<RepositoryBaseType>
 {
 private:
-  //hiberlite::Database *db;
   std::shared_ptr<hiberlite::Database> db;
   inline static std::mutex repMtx;
 public:
