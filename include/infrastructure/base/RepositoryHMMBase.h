@@ -7,13 +7,13 @@
 #include "GenLogger.hpp"
 
 template <typename RepositoryBaseType>
-class RepositoryHeapMemoryBase : public IRepositoryBase<RepositoryBaseType>
+class RepositoryHMMBase : public IRepositoryBase<RepositoryBaseType>
 {
 private:
 	inline static std::vector<RepositoryBaseType> entityVector;
   inline static std::mutex repMtx;
 public:
-  virtual ~RepositoryHeapMemoryBase(){}
+  virtual ~RepositoryHMMBase(){}
 
   void Store(RepositoryBaseType entity)
   {

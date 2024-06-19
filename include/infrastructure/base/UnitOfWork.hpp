@@ -20,7 +20,7 @@
 #include "RepositoryFFSBase.h"
 #include "GenLogger.hpp"
 
-#define REPOSITORY_TYPE RepositoryType::HeapRepository
+#define REPOSITORY_TYPE RepositoryType::HMM
 //#define REPOSITORY_TYPE RepositoryType::ORM
 //#define REPOSITORY_TYPE RepositoryType::FFS
 //#define REPOSITORY_TYPE RepositoryType::ODM

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IRepositoryFactory.h"
-#include "RepositoryHeapMemoryBase.h"
+#include "RepositoryHMMBase.h"
 #include "RepositoryORMBase.h"
 #include "RepositoryODMBase.h"
 #include "RepositoryFFSBase.h"
@@ -10,7 +10,7 @@ template <typename T>
 class RepositoryFactory : public IRepositoryFactory<T>
 {
 private:
-	RepositoryHeapMemoryBase<T> *heapRep;
+	RepositoryHMMBase<T> *heapRep;
 	RepositoryORMBase<T> *ormRep;
 	RepositoryODMBase<T> *odmRep;
 	RepositoryFFSBase<T> *ffsRep;
@@ -22,10 +22,10 @@ public:
 		GSL::Dprintf(GSL::DEBUG, " RespositoryFactory GetRepository enter with db type = ", db.type().name());
 		switch (repository)
 		{
-		case RepositoryType::HeapRepository:
+		case RepositoryType::HMM:
 			if (!heapRep)
 			{
-				heapRep = new RepositoryHeapMemoryBase<T>();
+				heapRep = new RepositoryHMMBase<T>();
 			}
 			return heapRep;
 			break;

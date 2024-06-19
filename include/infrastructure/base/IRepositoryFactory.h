@@ -6,7 +6,7 @@
 
 enum RepositoryType
 {
-  HeapRepository,
+  HMM,
   ORM,
   ODM,
   FFS
