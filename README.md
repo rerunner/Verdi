@@ -1,4 +1,4 @@
-![image](https://github.com/rerunner/Scanner/assets/6563193/3c28ca39-8d0f-446d-ae4a-eab9c06ef0cc)
+![image](https://github.com/rerunner/Verdi/assets/6563193/4a5e03da-ea48-4cdf-bb5b-675a1d8425ab)
 
 ![image](https://github.com/rerunner/Scanner/assets/6563193/d22ec6df-c950-4aed-a1fa-4a923b3a42f4)
 
