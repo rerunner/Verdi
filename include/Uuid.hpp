@@ -50,6 +50,3 @@ public:
   //JSON boilerplate
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(Uuid, uuid_)
 };
-
-// Boilerplate
-HIBERLITE_EXPORT_CLASS(Uuid)

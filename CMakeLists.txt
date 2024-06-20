@@ -92,6 +92,7 @@ endif (DOXYGEN_FOUND)
 
 # Scanner target
 add_executable(VerdiTest
+	${src}/include/Uuid.cpp
 	${src}/src/main.cpp
 )
 
