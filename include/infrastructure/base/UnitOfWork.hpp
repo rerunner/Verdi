@@ -32,6 +32,8 @@ enum RegistryTypeEnum
     RegisterDeleted
 };
 
+class UnitOfWork; // Programming like Onslow...
+
 template < typename EntityType> 
 class EntityRegister
 {
@@ -40,6 +42,7 @@ class EntityRegister
     std::any db;
     inline static std::mutex mtx;
     RepositoryType repositoryType_;
+    UnitOfWork *unitOfWorkContext;
 
     void Commit()
     {
@@ -62,19 +65,29 @@ class EntityRegister
         }  
     }
 public:
-    EntityRegister(std::shared_ptr<EntityType> newEnt, RegistryTypeEnum newRegistryType, std::any passedDb)
-    {
-        entityInstance = newEnt;
-        registryType = newRegistryType;
-        db = passedDb;
-        repositoryType_ = RepositoryTypeBase::REPOSITORY_TYPE;
-    }
+  EntityRegister(std::shared_ptr<EntityType> newEnt, RegistryTypeEnum newRegistryType, std::any passedDb, UnitOfWork *uOWC)
+  {
+    entityInstance = newEnt;
+    registryType = newRegistryType;
+    db = passedDb;
+    unitOfWorkContext = uOWC;
+    repositoryType_ = RepositoryTypeBase::REPOSITORY_TYPE;
+  }
     
-    virtual ~EntityRegister()
+  virtual ~EntityRegister()
+  {
+    // Find the unit of work and check if rollback is set
+    if ((unitOfWorkContext)&&(unitOfWorkContext->GetRollback()))
     {
-        Commit();
-        db = nullptr;
+      GSL::Dprintf(GSL::DEBUG, "Rollback requested, no commit");        
     }
+    else
+    {
+      GSL::Dprintf(GSL::DEBUG, "No rollback, commit");
+      Commit();
+    }
+    db = nullptr;
+  }
 };
 
 template<typename EntityType>
@@ -90,17 +103,21 @@ private:
     std::list<std::any> _deletedEntities;
     std::any db;
     RepositoryType repositoryType_;
+    bool _rollback;
 
 public:
     UnitOfWork(std::any passedDb)
     {
         db = passedDb;
         repositoryType_ = RepositoryTypeBase::REPOSITORY_TYPE;
+        _rollback = true; // Only a commit will change this
     }
     virtual ~UnitOfWork()
     {
         db = nullptr;
     }
+
+    bool GetRollback(){ return _rollback;}
 
     template <typename EntityType>
     void RegisterNew(std::shared_ptr<EntityType> entPtr)
@@ -116,7 +133,7 @@ public:
             }
         }
 
-        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterNew, db);
+        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterNew, db, this);
         _newEntities.push_back(std::move(myNewEntityPtr)); //Register
         
     }
@@ -134,7 +151,7 @@ public:
                 GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
             }
         }
-        EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDirty, db);
+        EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDirty, db, this);
         _updatedEntities.push_back(std::move(myUpdatedEntityPtr)); //Register
         
         GSL::Dprintf(GSL::DEBUG, "EXIT");
@@ -154,13 +171,14 @@ public:
             }
         }
 		
-        EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDeleted, db);
+        EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDeleted, db, this);
         _deletedEntities.push_back(std::move(myDeletedEntityPtr)); //Register
     }
     
     void Commit()
     {
         GSL::Dprintf(GSL::DEBUG, "Commit UoW ID = ", _context.Get());
+        _rollback = false; // In theory: In case the same unit of work is used after a rollback
         // Too bad that we don't know the templated types anymore :-(
         // Committing changed or new objects happens in the destructor of list of changed entities (at destruction of this UoW instance)
         if (repositoryType_ == RepositoryType::ORM)
@@ -174,11 +192,18 @@ public:
             }
         }
         _newEntities.clear(); // clearing calls destructor, hence commit happens
+        _updatedEntities.clear(); // Ditto
+        _deletedEntities.clear(); // ""
     }
 
     void Rollback()
     {
-        //Todo, remove without commit
+      GSL::Dprintf(GSL::DEBUG, "Rollback UoW ID = ", _context.Get());
+      _rollback = true;
+      _newEntities.clear(); 
+      _updatedEntities.clear();
+      _deletedEntities.clear();
+      // Aaaand, it's gone...
     }
 
     template <typename entityType>
