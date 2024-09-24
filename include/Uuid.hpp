@@ -8,6 +8,9 @@
 #include <nlohmann/json.hpp>
 #include "domain/base/ValueObjectBase.hpp"
 
+namespace Verdi
+{
+
 class Uuid : public ValueObjectBase
 {
 private:
@@ -50,3 +53,5 @@ public:
   //JSON boilerplate
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(Uuid, uuid_)
 };
+
+}

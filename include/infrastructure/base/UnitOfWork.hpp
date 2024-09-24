@@ -20,6 +20,8 @@
 #include "RepositoryFFSBase.h"
 #include "GenLogger.hpp"
 
+namespace Verdi
+{
 namespace unitofwork {
 
 typedef std::map<std::string, void*> Dict; // Dictionary for repositories
@@ -308,3 +310,4 @@ public:
 };
 
 } // namespace UnitOfWork
+}

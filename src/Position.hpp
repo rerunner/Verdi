@@ -6,7 +6,7 @@
 
 using json = nlohmann::json;
 
-class Position : public ValueObjectBase
+class Position : public Verdi::ValueObjectBase
 {
 private:
   double x_;

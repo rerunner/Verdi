@@ -4,6 +4,9 @@
 #include "boost/lexical_cast.hpp"
 #include "Uuid.hpp"
 
+namespace Verdi
+{
+
 class EntityBase
 {
 protected:
@@ -27,3 +30,5 @@ public:
     return !(*this == other);
   }
 };
+
+}

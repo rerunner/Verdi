@@ -5,6 +5,8 @@
 #include "WaferHeightMap.hpp"
 #include "IWaferHeightMapRepository.hpp"
 
+using namespace Verdi;
+
 unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::WARNING | GSL::INFO;
 
 RepositoryType RepositoryTypeBase::REPOSITORY_TYPE = RepositoryType::ORM;

@@ -13,6 +13,9 @@
 #include "IRepositoryBase.h"
 #include "GenLogger.hpp"
 
+namespace Verdi
+{
+
 using json = nlohmann::json;
 
 template <typename RepositoryBaseType>
@@ -144,3 +147,5 @@ public:
     return finalList;
   }
 };
+
+}

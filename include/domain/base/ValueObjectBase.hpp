@@ -1,7 +1,9 @@
-#ifndef VALUE_OBJECT_BASE_H
-#define VALUE_OBJECT_BASE_H
+#pragma once
 
 #include <iostream>
+
+namespace Verdi
+{
 
 class ValueObjectBase
 {
@@ -16,5 +18,6 @@ public:
   virtual ~ValueObjectBase() = default;
 };
 
-#endif /* VALUE_OBJECT_BASE_H */
+}
+
 

@@ -3,6 +3,9 @@
 
 #include "EntityBase.hpp"
 
+namespace Verdi
+{
 #define AggregateBase EntityBase
+}
 
 #endif // AGGREGATE_BASE_H

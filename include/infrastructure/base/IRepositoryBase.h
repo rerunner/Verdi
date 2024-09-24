@@ -3,6 +3,9 @@
 #include <vector>
 #include "Uuid.hpp"
 
+namespace Verdi
+{
+
 template <typename T>
 class IRepositoryBase
 {
@@ -13,3 +16,5 @@ public:
   virtual std::vector<T> GetAll() = 0;
   virtual std::vector<T> GetAllChildren(Uuid id) = 0;
 };
+
+}

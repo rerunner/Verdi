@@ -7,7 +7,7 @@
 
 using json = nlohmann::json;
 
-class WaferHeightMap : public AggregateRootBase
+class WaferHeightMap : public Verdi::AggregateRootBase
 {
 private:
   std::list<Measurement> measurements_;

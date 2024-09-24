@@ -1,3 +1,4 @@
 #include "Uuid.hpp"
+
 // Boilerplate
-HIBERLITE_EXPORT_CLASS(Uuid)
+HIBERLITE_EXPORT_CLASS(Verdi::Uuid)

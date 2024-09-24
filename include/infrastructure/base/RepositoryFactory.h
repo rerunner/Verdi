@@ -6,6 +6,9 @@
 #include "RepositoryODMBase.h"
 #include "RepositoryFFSBase.h"
 
+namespace Verdi
+{
+
 template <typename T>
 class RepositoryFactory : public IRepositoryFactory<T>
 {
@@ -66,3 +69,5 @@ public:
 		if (heapRep) {delete heapRep; heapRep = nullptr;}
 	};
 };
+
+}

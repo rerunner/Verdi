@@ -4,6 +4,9 @@
 #include <raven_cpp_client.h> // Problems with clang, gcc ok
 #include "IRepositoryBase.h"
 
+namespace Verdi
+{
+
 enum RepositoryType
 {
   HMM,
@@ -25,3 +28,5 @@ public:
   virtual ~IRepositoryFactory(){}
   virtual IRepositoryBase<T>* GetRepository(RepositoryType repository, std::any db) = 0;
 };
+
+}

@@ -9,6 +9,9 @@
 #include <string_view>
 #include <experimental/source_location>
 
+namespace Verdi
+{
+
 namespace GSL {
     struct time_of_day_clock {};
     using time_of_day = std::chrono::time_point<time_of_day_clock, std::chrono::seconds>;
@@ -90,4 +93,5 @@ namespace GSL {
             std::cout << stream.str();
         }
     }
+}
 }

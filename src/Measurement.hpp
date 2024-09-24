@@ -7,7 +7,7 @@
 
 using json = nlohmann::json;
 
-class Measurement : public ValueObjectBase
+class Measurement : public Verdi::ValueObjectBase
 {
 private:
   double z_;

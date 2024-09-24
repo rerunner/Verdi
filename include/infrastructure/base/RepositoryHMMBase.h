@@ -6,6 +6,9 @@
 #include "IRepositoryBase.h"
 #include "GenLogger.hpp"
 
+namespace Verdi
+{
+
 template <typename RepositoryBaseType>
 class RepositoryHMMBase : public IRepositoryBase<RepositoryBaseType>
 {
@@ -72,3 +75,5 @@ public:
     return vList;
   };
 };
+
+}
