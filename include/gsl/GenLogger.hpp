@@ -28,6 +28,9 @@ namespace GSL {
 
     extern unsigned int ACTIVE_MESSAGES;
 
+    int Init(void);
+    void DisruptorMessage(std::string message);
+
     // Format to HH:MM:SS
 
 #if defined __clang__
@@ -38,7 +41,7 @@ namespace GSL {
 
     template <typename ...Args>
     void GenTraceLoc(unsigned int Severity, pid_t thePid, std::thread::id theTid, const char* theFileName, const std::experimental::source_location& location, Args&& ...args)
-    {
+        {
         std::ostringstream stream;
         if (Severity & ACTIVE_MESSAGES)
         {
@@ -90,8 +93,9 @@ namespace GSL {
             }
             (stream << ... << std::forward<Args>(args)) << "\033[0m" << std::endl;
 
-            std::cout << stream.str();
+            DisruptorMessage(stream.str());
         }
     }
-}
-}
+
+} // namespace GSL
+} // namespace Verdi

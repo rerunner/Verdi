@@ -89,13 +89,26 @@ else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-
-# Scanner target
-add_executable(VerdiTest
-	${src}/include/Uuid.cpp
-	${src}/src/main.cpp
+# Create the Verdi library
+add_library(Verdi)
+target_include_directories(Verdi PUBLIC "/usr/local/include" "/usr/include/hiberlite" 
+	"${src}/include"
+	"${src}/include/gsl"
+	"${src}/include/gsl/disruptor"
+)
+target_sources(Verdi
+  PUBLIC
+	${src}/src/Uuid.cpp 
+	${src}/src/gsl/GenLogger.cpp
+	${src}/src/gsl/disruptor/ring_buffer_on_shmem.cpp
+	${src}/src/gsl/disruptor/shared_mem_manager.cpp
 )
 
-target_include_directories(VerdiTest PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src" "${src}/include")
-target_link_libraries(VerdiTest Raven_CppClient_static nlohmann_json::nlohmann_json xxhash ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
+# Verdi test target
+add_executable(VerdiTest
+	${src}/test/main.cpp
+)
+
+target_include_directories(VerdiTest PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/include/gsl" "${src}/include")
+target_link_libraries(VerdiTest Verdi Raven_CppClient_static nlohmann_json::nlohmann_json xxhash ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
 

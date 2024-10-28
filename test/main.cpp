@@ -21,6 +21,8 @@ int main()
     unitofwork::UnitOfWorkFactory UoWFactory;
     Uuid testId;
 
+    GSL::Init();
+
     GSL::Dprintf(GSL::INFO, "Versatile Data Infrastructure simple test suite");
 
     std::unique_ptr<unitofwork::UnitOfWork> context0_ = UoWFactory.GetNewUnitOfWork();
