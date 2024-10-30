@@ -12,6 +12,9 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 option(BUILD_DOC "Build documentation" ON)
 
+set(src "${CMAKE_CURRENT_SOURCE_DIR}")
+set(dst "${CMAKE_CURRENT_BINARY_DIR}")
+
 ## START RAVENRB
 set (RAVENCPP_SRC "${PROJECT_SOURCE_DIR}/libs/RavenDB" CACHE INTERNAL "RAVENCPP_SRC")
 
@@ -45,6 +48,19 @@ include_directories(${CMAKE_INCLUDE_PATH})
 link_directories(${CMAKE_LIBRARY_PATH})
 ## END RAVENRB
 
+## START GSL
+#fetch GSL library from its repo
+include(FetchContent)
+
+FetchContent_Declare(GSL
+  GIT_REPOSITORY https://github.com/rerunner/GSL.git
+  GIT_TAG        main
+  )
+
+# make available
+FetchContent_MakeAvailable(GSL)
+## END GSL
+
 
 find_package(CURL) 
 find_package(nlohmann_json 3.2.0 REQUIRED)
@@ -61,8 +77,8 @@ find_library(CURL_LIBRARIES curl)
 set(CXXFLAGS  "-fdiagnostics-color=always -g -std=c++20 -DSTRING_NAMES=1 -DL1D_CACHE_LINE_SIZE=64")
 set(CMAKE_CXX_FLAGS "${CXXFLAGS}")
 
-set(src "${CMAKE_CURRENT_SOURCE_DIR}")
-set(dst "${CMAKE_CURRENT_BINARY_DIR}")
+#set(src "${CMAKE_CURRENT_SOURCE_DIR}")
+#set(dst "${CMAKE_CURRENT_BINARY_DIR}")
 set(all_targets VerdiTest)
 
 #Some files need to be moved into the temporary destination folder
@@ -93,15 +109,10 @@ endif (DOXYGEN_FOUND)
 add_library(Verdi)
 target_include_directories(Verdi PUBLIC "/usr/local/include" "/usr/include/hiberlite" 
 	"${src}/include"
-	"${src}/include/gsl"
-	"${src}/include/gsl/disruptor"
 )
 target_sources(Verdi
   PUBLIC
 	${src}/src/Uuid.cpp 
-	${src}/src/gsl/GenLogger.cpp
-	${src}/src/gsl/disruptor/ring_buffer_on_shmem.cpp
-	${src}/src/gsl/disruptor/shared_mem_manager.cpp
 )
 
 # Verdi test target
@@ -109,6 +120,6 @@ add_executable(VerdiTest
 	${src}/test/main.cpp
 )
 
-target_include_directories(VerdiTest PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/include/gsl" "${src}/include")
-target_link_libraries(VerdiTest Verdi Raven_CppClient_static nlohmann_json::nlohmann_json xxhash ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
+target_include_directories(VerdiTest PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/include" "${GSL_SOURCE_DIR}/include")
+target_link_libraries(VerdiTest Verdi GSL Raven_CppClient_static nlohmann_json::nlohmann_json xxhash ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
 
