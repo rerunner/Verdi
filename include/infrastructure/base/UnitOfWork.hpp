@@ -66,6 +66,7 @@ class EntityRegister
                 break;
         }  
     }
+    void CloseIt();
 public:
   EntityRegister(std::shared_ptr<EntityType> newEnt, RegistryTypeEnum newRegistryType, std::any passedDb, UnitOfWork *uOWC)
   {
@@ -75,9 +76,10 @@ public:
     unitOfWorkContext = uOWC;
     repositoryType_ = RepositoryTypeBase::REPOSITORY_TYPE;
   }
-    
+
   virtual ~EntityRegister()
   {
+#if 0
     // Find the unit of work and check if rollback is set
     if ((unitOfWorkContext)&&(unitOfWorkContext->GetRollback()))
     {
@@ -88,6 +90,9 @@ public:
       GSL::Dprintf(GSL::DEBUG, "No rollback, commit");
       Commit();
     }
+#else
+    CloseIt();
+#endif
     db = nullptr;
   }
 };
@@ -214,6 +219,21 @@ public:
     template <typename entityType>
     std::list<entityType> GetAll(){/*todo*/}
 };
+
+template < typename EntityType> 
+inline void EntityRegister<EntityType>::CloseIt()
+{
+    // Find the unit of work and check if rollback is set
+    if ((unitOfWorkContext)&&(unitOfWorkContext->GetRollback()))
+    {
+      GSL::Dprintf(GSL::DEBUG, "Rollback requested, no commit");        
+    }
+    else
+    {
+      GSL::Dprintf(GSL::DEBUG, "No rollback, commit");
+      Commit();
+    }
+}
 
 
 class UnitOfWorkFactory
