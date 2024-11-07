@@ -19,6 +19,7 @@
 #include "RepositoryODMBase.h"
 #include "RepositoryFFSBase.h"
 #include "GenLogger.hpp"
+#include "domain/base/AggregateRootBase.hpp"
 
 namespace Verdi
 {
@@ -100,6 +101,9 @@ public:
 template<typename EntityType>
 using EntityRegisterPtr = std::shared_ptr<EntityRegister<EntityType>>;
 
+template <typename T>
+concept ConceptAggregateRoot = std::is_base_of<AggregateRootBase, T>::value;
+    
 class UnitOfWork
 {
 private:
@@ -126,59 +130,59 @@ public:
 
     bool GetRollback(){ return _rollback;}
 
-    template <typename EntityType>
-    void RegisterNew(std::shared_ptr<EntityType> entPtr)
+    template <ConceptAggregateRoot T>
+    void RegisterNew(std::shared_ptr<T> entPtr)
     {
         if (repositoryType_ == RepositoryType::ORM)
         {
             auto db2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(db);
             try {
-                db2->registerBeanClass<EntityType>();
+                db2->registerBeanClass<T>();
             }
             catch (std::exception& e) {
                 GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
             }
         }
 
-        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterNew, db, this);
+        EntityRegisterPtr<T> myNewEntityPtr = std::make_shared<EntityRegister<T>>(entPtr, RegistryTypeEnum::RegisterNew, db, this);
         _newEntities.push_back(std::move(myNewEntityPtr)); //Register
         
     }
 
-    template <typename EntityType>
-    void RegisterDirty(std::shared_ptr<EntityType> entPtr)
+    template <ConceptAggregateRoot T>
+    void RegisterDirty(std::shared_ptr<T> entPtr)
     { 
         if (repositoryType_ == RepositoryType::ORM)
         {
             auto db2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(db);
             try {
-                db2->registerBeanClass<EntityType>();
+                db2->registerBeanClass<T>();
             }
             catch (std::exception& e) {
                 GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
             }
         }
-        EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDirty, db, this);
+        EntityRegisterPtr<T> myUpdatedEntityPtr = std::make_shared<EntityRegister<T>>(entPtr, RegistryTypeEnum::RegisterDirty, db, this);
         _updatedEntities.push_back(std::move(myUpdatedEntityPtr)); //Register
         
         GSL::Dprintf(GSL::DEBUG, "EXIT");
     }
 
-    template <typename EntityType>
-    void RegisterDeleted(std::shared_ptr<EntityType> entPtr)
+    template <ConceptAggregateRoot T>
+    void RegisterDeleted(std::shared_ptr<T> entPtr)
     { 
         if (repositoryType_ == RepositoryType::ORM)
         {
             auto db2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(db);
             try {
-                db2->registerBeanClass<EntityType>();
+                db2->registerBeanClass<T>();
             }
             catch (std::exception& e) {
                 GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
             }
         }
 		
-        EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDeleted, db, this);
+        EntityRegisterPtr<T> myDeletedEntityPtr = std::make_shared<EntityRegister<T>>(entPtr, RegistryTypeEnum::RegisterDeleted, db, this);
         _deletedEntities.push_back(std::move(myDeletedEntityPtr)); //Register
     }
     
@@ -213,11 +217,11 @@ public:
       // Aaaand, it's gone...
     }
 
-    template <typename entityType>
-    entityType Get(Uuid id){/*repository->Get(id);*/ return nullptr;}
+    template <ConceptAggregateRoot T>
+    T Get(Uuid id){/*repository->Get(id);*/ return nullptr;}
 
-    template <typename entityType>
-    std::list<entityType> GetAll(){/*todo*/}
+    template <ConceptAggregateRoot T>
+    std::list<T> GetAll(){/*todo*/}
 };
 
 template < typename EntityType> 
@@ -234,7 +238,6 @@ inline void EntityRegister<EntityType>::CloseIt()
       Commit();
     }
 }
-
 
 class UnitOfWorkFactory
 {

@@ -18,7 +18,6 @@ private:
   void hibernate(Archive & ar)
   {
     ar & HIBERLITE_NVP(id_); // From Entity Base class
-    ar & HIBERLITE_NVP(parentId_); // From Entity Base class
     ar & HIBERLITE_NVP(measurements_);
   }
   //Boilerplate end
@@ -33,7 +32,7 @@ public:
   void AddMeasurement(Measurement m) { measurements_.push_back(m); }
 
   //JSON boilerplate
-  NLOHMANN_DEFINE_TYPE_INTRUSIVE(WaferHeightMap, id_, parentId_, measurements_)
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(WaferHeightMap, id_, measurements_)
 };
 
 // Boilerplate
